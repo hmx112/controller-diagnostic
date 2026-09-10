@@ -105,10 +105,13 @@ test('non-standard mapping stays in Raw Input Mode without guessed stick roles',
 });
 
 test('multiple controllers can be selected and selection falls back after disconnect', async ({ page }) => {
-  await page.evaluate(([first, second]) => {
+  await page.evaluate(({ first, second }) => {
     window.__gamepadTest.connect(first);
     window.__gamepadTest.connect(second);
-  }, [standardPad(0, 'Controller A'), standardPad(1, 'Controller B')]);
+  }, {
+    first: standardPad(0, 'Controller A'),
+    second: standardPad(1, 'Controller B'),
+  });
 
   const select = page.getByTestId('controller-select');
   await expect(select.locator('option')).toHaveCount(2);
