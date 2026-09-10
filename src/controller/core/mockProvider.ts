@@ -3,7 +3,7 @@ import type { GamepadLike, GamepadProvider } from './types.js';
 export type GamepadPatch = Partial<Omit<GamepadLike, 'index'>>;
 
 export class MockGamepadProvider implements GamepadProvider {
-  private gamepads = new Map<number, GamepadLike>();
+  private gamepads = new Map<number, GamepadLike | null>();
   private listeners = new Set<() => void>();
 
   getGamepads(): readonly (GamepadLike | null)[] {
@@ -30,8 +30,9 @@ export class MockGamepadProvider implements GamepadProvider {
   }
 
   disconnect(index: number): void {
-    if (!this.gamepads.has(index)) return;
-    this.gamepads.delete(index);
+    const current = this.gamepads.get(index);
+    if (!current) return;
+    this.gamepads.set(index, null);
     this.emit();
   }
 
