@@ -1,0 +1,195 @@
+---
+import '../styles/global.css';
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Test controller buttons, triggers, sticks, raw inputs, center deviation, range, circularity, and deadzone values exposed by your browser." />
+    <meta name="robots" content="index,follow" />
+    <title>Controller Diagnostic — Gamepad Input Tester</title>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="/" aria-label="Controller Diagnostic home">
+        <span class="brand-mark" aria-hidden="true">CD</span>
+        <span>Controller Diagnostic</span>
+      </a>
+      <span class="privacy-chip">Runs in your browser</span>
+    </header>
+
+    <main class="page-shell">
+      <section class="hero" aria-labelledby="page-title">
+        <div>
+          <p class="eyebrow">Browser-based controller input diagnostics</p>
+          <h1 id="page-title">See what your browser receives from your controller.</h1>
+          <p class="hero-copy">Test buttons, analog triggers, sticks, raw axes, center deviation, observed range, circularity, and a guided deadzone threshold workflow without uploading controller data.</p>
+        </div>
+        <div class="hero-badge" aria-hidden="true">
+          <span class="hero-stick hero-stick-left"></span>
+          <span class="hero-stick hero-stick-right"></span>
+          <span class="hero-button hero-button-a"></span>
+          <span class="hero-button hero-button-b"></span>
+        </div>
+      </section>
+
+      <section class="connection-card" aria-live="polite">
+        <div class="status-dot" id="status-dot" aria-hidden="true"></div>
+        <div class="connection-copy">
+          <strong data-testid="connection-status">Connect a controller and press any button</strong>
+          <span id="connection-detail">The browser will list controllers it can expose through the Gamepad API.</span>
+        </div>
+        <label class="controller-picker" id="controller-picker" hidden>
+          <span>Controller</span>
+          <select data-testid="controller-select" id="controller-select"></select>
+        </label>
+      </section>
+
+      <section id="browser-support-warning" class="notice notice-warning" hidden>
+        This browser does not expose <code>navigator.getGamepads()</code>. Try a current desktop browser with Gamepad API support.
+      </section>
+
+      <div id="live-tool" hidden>
+        <section class="summary-grid" aria-label="Controller summary">
+          <article class="summary-card summary-primary">
+            <span class="card-label">Detected controller</span>
+            <strong id="controller-name">—</strong>
+            <span id="controller-count">—</span>
+          </article>
+          <article class="summary-card">
+            <span class="card-label">Input mode</span>
+            <strong class="mode-badge" data-testid="mode-badge" id="mode-badge">—</strong>
+            <span id="profile-id">—</span>
+          </article>
+          <article class="summary-card">
+            <span class="card-label">Inputs exposed</span>
+            <strong id="input-counts">—</strong>
+            <span>Browser-observed</span>
+          </article>
+        </section>
+
+        <section class="tool-grid">
+          <article class="panel buttons-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="panel-kicker">Live input</p>
+                <h2>Buttons</h2>
+              </div>
+              <span class="panel-hint">Pressed controls highlight instantly</span>
+            </div>
+            <div class="button-grid" data-testid="button-grid" id="button-grid"></div>
+          </article>
+
+          <article class="panel triggers-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="panel-kicker">Analog input</p>
+                <h2>Triggers</h2>
+              </div>
+            </div>
+            <div class="trigger-stack">
+              <div class="trigger-row" data-testid="trigger-l2" id="trigger-l2">
+                <span>Left Trigger</span>
+                <div class="meter"><span class="meter-fill"></span></div>
+                <output>—</output>
+              </div>
+              <div class="trigger-row" data-testid="trigger-r2" id="trigger-r2">
+                <span>Right Trigger</span>
+                <div class="meter"><span class="meter-fill"></span></div>
+                <output>—</output>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <section class="panel sticks-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="panel-kicker">Analog position</p>
+              <h2>Sticks</h2>
+            </div>
+            <span class="panel-hint" id="stick-mode-hint">Standard mapping axes 0–3</span>
+          </div>
+          <div class="sticks-grid">
+            <div class="stick-card">
+              <div class="stick-title"><strong>Left stick</strong><output id="left-stick-value">—</output></div>
+              <div class="stick-plot" data-testid="left-stick" id="left-stick" data-x="0.000" data-y="0.000">
+                <span class="axis axis-x"></span><span class="axis axis-y"></span><span class="stick-dot"></span>
+              </div>
+            </div>
+            <div class="stick-card">
+              <div class="stick-title"><strong>Right stick</strong><output id="right-stick-value">—</output></div>
+              <div class="stick-plot" data-testid="right-stick" id="right-stick" data-x="0.000" data-y="0.000">
+                <span class="axis axis-x"></span><span class="axis axis-y"></span><span class="stick-dot"></span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel diagnostics-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="panel-kicker">Session measurements</p>
+              <h2>Stick diagnostics</h2>
+            </div>
+            <span class="panel-hint">Start a session before using range, circularity, or threshold results</span>
+          </div>
+          <div class="diagnostic-table" data-testid="diagnostics-panel">
+            <div class="diagnostic-head"><span>Measurement</span><span>Left stick</span><span>Right stick</span></div>
+            <div class="diagnostic-row">
+              <div><strong>Center deviation</strong><span>Current radial magnitude</span></div>
+              <output id="center-left">—</output><output id="center-right">—</output>
+            </div>
+            <div class="diagnostic-row">
+              <div><strong>Observed range</strong><span>Maximum radial value in this session</span></div>
+              <div class="diagnostic-action"><output id="range-left">Not started</output><div><button data-session-action="start-range" data-stick="left">Start</button><button data-session-action="reset-range" data-stick="left">Reset</button></div></div>
+              <div class="diagnostic-action"><output id="range-right">Not started</output><div><button data-session-action="start-range" data-stick="right">Start</button><button data-session-action="reset-range" data-stick="right">Reset</button></div></div>
+            </div>
+            <div class="diagnostic-row">
+              <div><strong>Circularity</strong><span>Radial spread from perimeter samples</span></div>
+              <div class="diagnostic-action"><output id="circularity-left">Not started</output><div><button data-session-action="start-circularity" data-stick="left">Start</button><button data-session-action="reset-circularity" data-stick="left">Reset</button></div></div>
+              <div class="diagnostic-action"><output id="circularity-right">Not started</output><div><button data-session-action="start-circularity" data-stick="right">Start</button><button data-session-action="reset-circularity" data-stick="right">Reset</button></div></div>
+            </div>
+            <div class="diagnostic-row">
+              <div><strong>Deadzone threshold</strong><span>First movement above a 2% noise floor</span></div>
+              <div class="diagnostic-action"><output id="deadzone-left">Not started</output><div><button data-session-action="start-deadzone" data-stick="left">Start</button><button data-session-action="reset-deadzone" data-stick="left">Reset</button></div></div>
+              <div class="diagnostic-action"><output id="deadzone-right">Not started</output><div><button data-session-action="start-deadzone" data-stick="right">Start</button><button data-session-action="reset-deadzone" data-stick="right">Reset</button></div></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="tool-grid detail-grid">
+          <article class="panel raw-panel">
+            <div class="panel-heading">
+              <div><p class="panel-kicker">Uninterpreted values</p><h2>Raw input</h2></div>
+              <span class="panel-hint">Useful for non-standard mappings</span>
+            </div>
+            <div class="raw-input" data-testid="raw-input" id="raw-input"></div>
+          </article>
+          <article class="panel info-panel">
+            <div class="panel-heading"><div><p class="panel-kicker">Browser metadata</p><h2>Controller information</h2></div></div>
+            <dl class="info-list" data-testid="controller-info" id="controller-info"></dl>
+          </article>
+        </section>
+      </div>
+
+      <section class="notice" data-testid="diagnostic-notice">
+        <strong>About these results</strong>
+        <p>Results reflect input values exposed by your browser and operating system and may differ from raw hardware measurements. Session measurements describe only the values observed while you run them; they do not diagnose hardware failure.</p>
+      </section>
+
+      <section class="explain-grid" aria-label="How Controller Diagnostic works">
+        <article><h2>Standard Mapping</h2><p>When the browser reports <code>mapping = "standard"</code>, the tool can label common buttons, triggers, and the two main stick axes using the standard Gamepad layout.</p></article>
+        <article><h2>Raw Input Mode</h2><p>If the browser does not report standard mapping, the tool shows Button 0, Button 1, Axis 0, Axis 1, and the rest of the values exactly by index instead of guessing a physical layout.</p></article>
+        <article><h2>No controller upload</h2><p>The MVP reads controller values locally in the page. It does not send your controller test results to a server or require an external data API.</p></article>
+      </section>
+    </main>
+
+    <footer class="site-footer">Controller Diagnostic · Browser-visible inputs only</footer>
+
+    <script>
+      import '../controller/ui/runtime';
+    </script>
+  </body>
+</html>
