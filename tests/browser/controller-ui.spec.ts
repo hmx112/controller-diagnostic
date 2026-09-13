@@ -95,7 +95,7 @@ test('verified DualShock 4 USB profile labels button 17 as touchpad click', asyn
   ds4.buttons.push({ pressed: false, touched: false, value: 0 });
   await page.evaluate((pad) => window.__gamepadTest.connect(pad), ds4);
 
-  await expect(page.getByTestId('profile-id')).toContainText('dualshock4');
+  await expect(page.locator('#profile-id')).toContainText('dualshock4');
   await expect(page.locator('[data-button-index="17"]')).toContainText('Touchpad Click');
 });
 
