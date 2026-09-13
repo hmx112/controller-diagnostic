@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { resolveControllerMode } from '../../src/controller/mapping/resolver';
 import { standardAxisRole, STANDARD_BUTTON_LABELS } from '../../src/controller/mapping/standard';
 import { rawAxisLabel, rawButtonLabel } from '../../src/controller/mapping/raw';
+import { dualShock4ButtonLabel } from '../../src/controller/profiles/dualshock4';
 import { createNonStandardGamepad } from '../fixtures/nonStandard';
 import { createStandardGamepad } from '../fixtures/standardGamepad';
 
@@ -15,9 +16,25 @@ describe('mapping resolver', () => {
     expect(resolveControllerMode(gamepad)).toEqual({ mode: 'raw', profileId: 'raw' });
   });
 
-  it('recognizes a DualShock 4 overlay only after the browser reports standard mapping', () => {
-    const gamepad = createStandardGamepad({ id: 'Sony Interactive Entertainment Wireless Controller' });
+  it('recognizes the physically verified DualShock 4 USB id', () => {
+    const gamepad = createStandardGamepad({
+      id: 'Wireless Controller (STANDARD GAMEPAD Vendor: 054c Product: 09cc)',
+      buttons: Array.from({ length: 18 }, () => ({ pressed: false, touched: false, value: 0 })),
+      axes: [0, 0, 0, 0],
+    });
     expect(resolveControllerMode(gamepad)).toEqual({ mode: 'standard', profileId: 'dualshock4' });
+  });
+
+  it('does not classify a different Sony product id as DualShock 4', () => {
+    const gamepad = createStandardGamepad({
+      id: 'Wireless Controller (STANDARD GAMEPAD Vendor: 054c Product: 0ce6)',
+    });
+    expect(resolveControllerMode(gamepad)).toEqual({ mode: 'standard', profileId: 'generic-standard' });
+  });
+
+  it('labels the verified extra DualShock 4 button as the touchpad click', () => {
+    expect(dualShock4ButtonLabel(17)).toBe('Touchpad Click');
+    expect(dualShock4ButtonLabel(16)).toBeUndefined();
   });
 
   it('provides neutral standard and raw labels', () => {

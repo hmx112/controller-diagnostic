@@ -1,10 +1,55 @@
 # DualShock 4 Physical Validation Checklist
 
-Use this checklist only after the automated synthetic tests pass in an environment where npm dependencies can be installed. Run USB and Bluetooth as separate validation sessions because the browser/OS may expose different identifiers or behavior.
+Use this checklist only after the automated synthetic tests pass. Run USB and Bluetooth as separate validation sessions because the browser/OS may expose different identifiers or behavior.
 
 Do **not** change the DualShock 4 profile from assumptions. Record what the browser actually exposes first.
 
-## Test environment
+## Recorded validation: USB
+
+Validation date: 2026-09-14
+
+Status: **pass for the tested USB/browser combination**
+
+### Test environment
+
+- Operating system + version: not recorded
+- Browser + version: not recorded
+- Controller model / revision: PlayStation 4 DualShock 4; exact hardware revision not independently recorded
+- Connection: `USB`
+
+### Browser-exposed metadata
+
+- `Gamepad.id`: `Wireless Controller (STANDARD GAMEPAD Vendor: 054c Product: 09cc)`
+- `Gamepad.index`: `0`
+- `Gamepad.mapping`: `standard`
+- Button count: `18`
+- Axis count: `4`
+- Button 17: confirmed as **Touchpad Click**
+
+### Observed behavior
+
+- Face buttons: pass
+- D-pad: pass
+- L1 / R1: pass
+- L2 / R2: pass; analog values responded correctly
+- L3 / R3: pass
+- Left stick: pass
+- Right stick: pass
+- Touchpad click: pass; exposed as Button 17
+- Raw button/axis values: updated correctly
+- Idle axes observed in one screenshot: approximately `0.0039` on axes 0–3. This is a browser-observed session value, not a hardware drift diagnosis.
+
+### Scope note
+
+Bluetooth is **not physically verified yet** because the current test PC does not provide Bluetooth connectivity. Do not interpret this as Bluetooth being unsupported.
+
+The USB validation justifies a conservative DualShock 4 profile match for the observed `054c:09cc` identifier. Other Sony product IDs must not be classified as DualShock 4 solely because they use Sony vendor ID `054c`.
+
+---
+
+## Future validation session template
+
+### Test environment
 
 - Date/time:
 - Operating system + version:
@@ -12,7 +57,7 @@ Do **not** change the DualShock 4 profile from assumptions. Record what the brow
 - Controller model / revision if known:
 - Connection: `USB` / `Bluetooth`
 
-## Browser-exposed controller metadata
+### Browser-exposed controller metadata
 
 - `Gamepad.id`:
 - `Gamepad.index`:
@@ -21,7 +66,7 @@ Do **not** change the DualShock 4 profile from assumptions. Record what the brow
 - Axis count:
 - Initial `Gamepad.timestamp` behavior / notes:
 
-## Connection lifecycle
+### Connection lifecycle
 
 - [ ] Connect controller and press a button -> detected
 - [ ] Correct controller appears in selector
@@ -30,7 +75,7 @@ Do **not** change the DualShock 4 profile from assumptions. Record what the brow
 - [ ] Refresh while controller is connected -> re-detection behavior recorded
 - Notes:
 
-## Buttons
+### Buttons
 
 For each item, record `pass/fail`, observed button index, and anything unusual.
 
@@ -53,21 +98,21 @@ For each item, record `pass/fail`, observed button index, and anything unusual.
 - PS / Home button if exposed:
 - Other buttons exposed by browser:
 
-## Analog triggers
+### Analog triggers
 
-### L2
+#### L2
 - Resting value:
 - Maximum value observed:
 - Smooth 0 -> max transition: `pass/fail`
 - Notes:
 
-### R2
+#### R2
 - Resting value:
 - Maximum value observed:
 - Smooth 0 -> max transition: `pass/fail`
 - Notes:
 
-## Left stick
+### Left stick
 
 - Resting X:
 - Resting Y:
@@ -81,7 +126,7 @@ For each item, record `pass/fail`, observed button index, and anything unusual.
 - Circularity session result / notes:
 - Deadzone threshold workflow result / notes:
 
-## Right stick
+### Right stick
 
 - Resting X:
 - Resting Y:
@@ -95,7 +140,7 @@ For each item, record `pass/fail`, observed button index, and anything unusual.
 - Circularity session result / notes:
 - Deadzone threshold workflow result / notes:
 
-## Raw Input panel
+### Raw Input panel
 
 - [ ] Every exposed button is listed by index
 - [ ] Every exposed axis is listed by index
@@ -103,14 +148,14 @@ For each item, record `pass/fail`, observed button index, and anything unusual.
 - [ ] Raw panel values agree with the standard visualization where comparable
 - Notes:
 
-## Claim-safety review
+### Claim-safety review
 
 - [ ] No result says the controller is definitively broken
 - [ ] No result calls browser-observed deviation definitive hardware stick drift
 - [ ] Session-based range/circularity/deadzone results are presented as observations
 - [ ] Disclaimer is visible near the tool results
 
-## Validation outcome
+### Validation outcome
 
 - Connection mode: `USB` / `Bluetooth`
 - Overall result: `pass` / `pass with notes` / `needs investigation`

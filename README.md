@@ -22,7 +22,9 @@ The MVP is intentionally a **browser-observed controller input tool**, not a har
 
 ## Support policy
 
-The first physical validation target is **PlayStation 4 DualShock 4** over USB and Bluetooth where available.
+**PlayStation 4 DualShock 4 over USB has been physically validated for the browser-observed identifier `Vendor: 054c Product: 09cc`.** In that validation session the browser reported `mapping: standard`, 18 buttons, 4 axes, and Button 17 was confirmed as the touchpad click.
+
+DualShock 4 over Bluetooth has **not yet been physically verified**. This is not a claim that Bluetooth is unsupported; the current validation PC does not provide Bluetooth connectivity.
 
 Nintendo and Xbox devices are not claimed as physically verified in the MVP. The architecture is designed to add profiles later without changing the base engine. A non-standard browser mapping intentionally stays in **Raw Input Mode** instead of being forced into a guessed layout.
 
@@ -90,12 +92,18 @@ For Cloudflare Pages, use `npm run build` as the build command and `dist` as the
 
 ## DualShock 4 validation
 
-After automated tests pass, validate real hardware with:
+Physical USB validation currently covers the observed `054c:09cc` DualShock 4 path. The verified browser-visible behavior includes:
 
-- USB connection
-- Bluetooth connection
+- `mapping: standard`
+- 18 buttons
+- 4 axes
+- face buttons and D-pad responding correctly
+- L1/R1 and L2/R2 responding correctly, including analog trigger values
+- L3/R3 and both analog sticks responding correctly
+- Button 17 corresponding to the touchpad click
+- Raw Input values updating consistently with the standard-mapped controls
 
-Use [`docs/validation/dualshock4-checklist.md`](docs/validation/dualshock4-checklist.md) and record the actual browser-exposed ID, mapping, input counts, and values before changing the DualShock 4 profile.
+Bluetooth remains unverified. See [`docs/validation/dualshock4-checklist.md`](docs/validation/dualshock4-checklist.md) for the recorded session and future validation fields.
 
 ## Project structure
 
