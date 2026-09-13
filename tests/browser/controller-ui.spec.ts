@@ -90,6 +90,15 @@ test('standard controller connects and live values update', async ({ page }) => 
   await expect(page.getByTestId('trigger-l2').locator('output')).toHaveText('0.650');
 });
 
+test('verified DualShock 4 USB profile labels button 17 as touchpad click', async ({ page }) => {
+  const ds4 = standardPad(0, 'Wireless Controller (STANDARD GAMEPAD Vendor: 054c Product: 09cc)');
+  ds4.buttons.push({ pressed: false, touched: false, value: 0 });
+  await page.evaluate((pad) => window.__gamepadTest.connect(pad), ds4);
+
+  await expect(page.getByTestId('profile-id')).toContainText('dualshock4');
+  await expect(page.locator('[data-button-index="17"]')).toContainText('Touchpad Click');
+});
+
 test('non-standard mapping stays in Raw Input Mode without guessed stick roles', async ({ page }) => {
   const raw = standardPad(1, 'Synthetic Unknown Controller');
   raw.mapping = '';
