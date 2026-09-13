@@ -2,10 +2,12 @@ import type { ControllerProfile } from '../core/types.js';
 
 const DS4_ID_PATTERNS = [
   /dualshock\s*4/i,
-  /sony.+wireless controller/i,
-  /sony interactive entertainment.+wireless controller/i,
-  /(?:^|\b)054c(?:\b|:)/i,
+  /vendor:\s*054c\s+product:\s*09cc/i,
 ];
+
+export function dualShock4ButtonLabel(index: number): string | undefined {
+  return index === 17 ? 'Touchpad Click' : undefined;
+}
 
 export const dualShock4Profile: ControllerProfile = {
   id: 'dualshock4',
