@@ -8,7 +8,7 @@ import { StickRangeSession } from '../diagnostics/stickRange.js';
 import { rawAxisLabel, rawButtonLabel } from '../mapping/raw.js';
 import { STANDARD_BUTTON_LABELS } from '../mapping/standard.js';
 import { dualShock4ButtonLabel } from '../profiles/dualshock4.js';
-import { joyConButtonLabel, type JoyConProfileId } from '../profiles/joycon.js';
+import { joyConButtonLabel, joyConStickRoles, type JoyConProfileId, type StickAxisPair } from '../profiles/joycon.js';
 
 type StickName = 'left' | 'right';
 
@@ -18,6 +18,12 @@ interface StickSessions {
   circularity: CircularitySession;
   circularityActive: boolean;
   deadzone: DeadzoneSession;
+}
+
+interface InterpretedStick {
+  x: number | null;
+  y: number | null;
+  unavailableMessage: string | null;
 }
 
 const DISCLAIMER = 'Results reflect input values exposed by your browser and operating system and may differ from raw hardware measurements.';
@@ -120,17 +126,17 @@ function renderSelector(state: ControllerEngineState): void {
   if (state.selectedIndex !== null) elements.controllerSelect.value = String(state.selectedIndex);
 }
 
+function isJoyConProfileId(profileId: string): profileId is JoyConProfileId {
+  return profileId === 'joycon-left' || profileId === 'joycon-right' || profileId === 'joycon-pair';
+}
+
 function profileButtonLabel(controller: ControllerSnapshot, index: number): string | undefined {
   if (controller.capabilities.profileId === 'dualshock4') {
     return dualShock4ButtonLabel(index);
   }
 
-  if (
-    controller.capabilities.profileId === 'joycon-left'
-    || controller.capabilities.profileId === 'joycon-right'
-    || controller.capabilities.profileId === 'joycon-pair'
-  ) {
-    return joyConButtonLabel(controller.capabilities.profileId as JoyConProfileId, index);
+  if (isJoyConProfileId(controller.capabilities.profileId)) {
+    return joyConButtonLabel(controller.capabilities.profileId, index);
   }
 
   return undefined;
@@ -170,7 +176,57 @@ function renderTrigger(element: HTMLElement, value: number | null, unavailable =
   output.textContent = value.toFixed(3);
 }
 
-function renderStick(element: HTMLElement, output: HTMLOutputElement, x: number | null, y: number | null): void {
+function interpretedAxisPair(controller: ControllerSnapshot, pair: StickAxisPair | null, unavailableMessage: string): InterpretedStick {
+  if (pair === null) {
+    return { x: null, y: null, unavailableMessage };
+  }
+
+  return {
+    x: controller.axes[pair[0]]?.value ?? 0,
+    y: controller.axes[pair[1]]?.value ?? 0,
+    unavailableMessage: null,
+  };
+}
+
+function interpretedSticks(controller: ControllerSnapshot): Record<StickName, InterpretedStick> {
+  if (!controller.capabilities.standardMapping) {
+    const unavailable = 'Unavailable in Raw Input Mode';
+    return {
+      left: { x: null, y: null, unavailableMessage: unavailable },
+      right: { x: null, y: null, unavailableMessage: unavailable },
+    };
+  }
+
+  if (isJoyConProfileId(controller.capabilities.profileId)) {
+    const roles = joyConStickRoles(controller.capabilities.profileId);
+    const unavailable = 'Not available for this controller profile';
+    return {
+      left: interpretedAxisPair(controller, roles.left, unavailable),
+      right: interpretedAxisPair(controller, roles.right, unavailable),
+    };
+  }
+
+  return {
+    left: interpretedAxisPair(controller, [0, 1], 'Not available for this controller profile'),
+    right: interpretedAxisPair(controller, [2, 3], 'Not available for this controller profile'),
+  };
+}
+
+function stickModeHint(controller: ControllerSnapshot): string {
+  if (!controller.capabilities.standardMapping) return 'Stick roles are not inferred in Raw Input Mode';
+  if (controller.capabilities.profileId === 'joycon-left') return 'Verified Joy-Con profile: Axis 0–1 interpreted as Left stick';
+  if (controller.capabilities.profileId === 'joycon-right') return 'Verified Joy-Con profile: Axis 0–1 interpreted as Right stick';
+  if (controller.capabilities.profileId === 'joycon-pair') return 'Verified Joy-Con pair: axes 0–1 Left stick, 2–3 Right stick';
+  return 'Standard mapping axes 0–3';
+}
+
+function renderStick(
+  element: HTMLElement,
+  output: HTMLOutputElement,
+  x: number | null,
+  y: number | null,
+  unavailableMessage: string | null,
+): void {
   const dot = element.querySelector<HTMLElement>('.stick-dot');
   if (!dot) return;
 
@@ -179,7 +235,7 @@ function renderStick(element: HTMLElement, output: HTMLOutputElement, x: number 
     element.dataset.y = '';
     dot.style.left = '50%';
     dot.style.top = '50%';
-    output.textContent = 'Raw mode';
+    output.textContent = unavailableMessage ?? 'Unavailable';
     element.classList.add('is-unavailable');
     return;
   }
@@ -199,17 +255,23 @@ function updateSession(stick: StickName, x: number, y: number): void {
   if (state.deadzone.result().active) state.deadzone.addSample(x, y);
 }
 
-function renderDiagnosticOutputs(stick: StickName, x: number | null, y: number | null): void {
+function renderDiagnosticOutputs(
+  stick: StickName,
+  x: number | null,
+  y: number | null,
+  unavailableMessage: string | null,
+): void {
   const centerOutput = stick === 'left' ? elements.centerLeft : elements.centerRight;
   const rangeOutput = stick === 'left' ? elements.rangeLeft : elements.rangeRight;
   const circularityOutput = stick === 'left' ? elements.circularityLeft : elements.circularityRight;
   const deadzoneOutput = stick === 'left' ? elements.deadzoneLeft : elements.deadzoneRight;
 
   if (x === null || y === null) {
-    centerOutput.textContent = 'Unavailable in Raw Input Mode';
-    rangeOutput.textContent = 'Unavailable in Raw Input Mode';
-    circularityOutput.textContent = 'Unavailable in Raw Input Mode';
-    deadzoneOutput.textContent = 'Unavailable in Raw Input Mode';
+    const message = unavailableMessage ?? 'Unavailable';
+    centerOutput.textContent = message;
+    rangeOutput.textContent = message;
+    circularityOutput.textContent = message;
+    deadzoneOutput.textContent = message;
     return;
   }
 
@@ -265,6 +327,8 @@ function renderEmpty(): void {
 
 function renderController(controller: ControllerSnapshot, state: ControllerEngineState): void {
   const standard = controller.capabilities.standardMapping;
+  const sticks = interpretedSticks(controller);
+
   elements.statusDot.classList.add('is-connected');
   elements.connectionStatus.textContent = 'Controller detected';
   elements.connectionDetail.textContent = state.controllers.length > 1 ? `${state.controllers.length} controllers detected — choose one to inspect.` : 'Live browser-observed values are updating below.';
@@ -280,20 +344,22 @@ function renderController(controller: ControllerSnapshot, state: ControllerEngin
   renderTrigger(elements.triggerL2, standard ? (controller.buttons[6]?.value ?? null) : null, !standard);
   renderTrigger(elements.triggerR2, standard ? (controller.buttons[7]?.value ?? null) : null, !standard);
 
-  const leftX = standard ? (controller.axes[0]?.value ?? 0) : null;
-  const leftY = standard ? (controller.axes[1]?.value ?? 0) : null;
-  const rightX = standard ? (controller.axes[2]?.value ?? 0) : null;
-  const rightY = standard ? (controller.axes[3]?.value ?? 0) : null;
-  elements.stickModeHint.textContent = standard ? 'Standard mapping axes 0–3' : 'Stick roles are not inferred in Raw Input Mode';
-  renderStick(elements.leftStick, elements.leftStickValue, leftX, leftY);
-  renderStick(elements.rightStick, elements.rightStickValue, rightX, rightY);
-  renderDiagnosticOutputs('left', leftX, leftY);
-  renderDiagnosticOutputs('right', rightX, rightY);
+  elements.stickModeHint.textContent = stickModeHint(controller);
+  renderStick(elements.leftStick, elements.leftStickValue, sticks.left.x, sticks.left.y, sticks.left.unavailableMessage);
+  renderStick(elements.rightStick, elements.rightStickValue, sticks.right.x, sticks.right.y, sticks.right.unavailableMessage);
+  renderDiagnosticOutputs('left', sticks.left.x, sticks.left.y, sticks.left.unavailableMessage);
+  renderDiagnosticOutputs('right', sticks.right.x, sticks.right.y, sticks.right.unavailableMessage);
   renderRawInput(controller);
   renderInfo(controller);
 
   document.querySelectorAll<HTMLButtonElement>('[data-session-action]').forEach((button) => {
-    button.disabled = !standard;
+    const stick = button.dataset.stick;
+    const unavailable = stick === 'left'
+      ? sticks.left.x === null || sticks.left.y === null
+      : stick === 'right'
+        ? sticks.right.x === null || sticks.right.y === null
+        : true;
+    button.disabled = !standard || unavailable;
   });
 }
 
