@@ -22,13 +22,19 @@ The MVP is intentionally a **browser-observed controller input tool**, not a har
 
 ## Support policy
 
-**PlayStation 4 DualShock 4 over USB has been physically validated for the browser-observed identifier `Vendor: 054c Product: 09cc`.** In that validation session the browser reported `mapping: standard`, 18 buttons, 4 axes, and Button 17 was confirmed as the touchpad click.
+**PlayStation 4 DualShock 4 over USB has been physically validated for the browser-observed identifier `Vendor: 054c Product: 09cc`.** In that validation session the browser reported `mapping: standard`, 18 buttons, 4 axes, and Button 17 was confirmed as the touchpad click. Bluetooth connection has also been exercised successfully in the current test environment, but the documented identifier and detailed metadata below are from the USB validation session.
 
-DualShock 4 over Bluetooth has **not yet been physically verified**. This is not a claim that Bluetooth is unsupported; the current validation PC does not provide Bluetooth connectivity.
+Nintendo Joy-Con have also been physically exercised in the current test environment. The browser/OS exposed:
 
-Nintendo and Xbox devices are not claimed as physically verified in the MVP. The architecture is designed to add profiles later without changing the base engine. A non-standard browser mapping intentionally stays in **Raw Input Mode** instead of being forced into a guessed layout.
+- Joy-Con (L): `057e:2006`, `mapping: standard`, 17 buttons, 2 axes
+- Joy-Con (R): `057e:2007`, `mapping: standard`, 17 buttons, 2 axes
+- Joy-Con L+R: `057e:200e`, `mapping: standard`, 22 buttons, 4 axes
 
-Joy-Con Left and Right are treated as independent controllers by the base engine. The MVP does not automatically merge them.
+The Joy-Con profiles override only controls physically confirmed during testing. Unverified extra indices keep neutral labels instead of guessed Nintendo names. See [`docs/validation/joycon-validation.md`](docs/validation/joycon-validation.md).
+
+Controller exposure can vary by browser, operating system, driver, and connection path. The application follows what the browser exposes: if Joy-Con Left and Right appear separately, they remain separate controllers; if the browser exposes a combined `Joy-Con L+R` device, the application treats that browser-visible device as one controller.
+
+Xbox devices are not yet claimed as physically verified in the MVP. A non-standard browser mapping intentionally stays in **Raw Input Mode** instead of being forced into a guessed layout.
 
 ## Privacy
 
@@ -103,7 +109,11 @@ Physical USB validation currently covers the observed `054c:09cc` DualShock 4 pa
 - Button 17 corresponding to the touchpad click
 - Raw Input values updating consistently with the standard-mapped controls
 
-Bluetooth remains unverified. See [`docs/validation/dualshock4-checklist.md`](docs/validation/dualshock4-checklist.md) for the recorded session and future validation fields.
+Bluetooth has also been exercised successfully in the current test environment. See [`docs/validation/dualshock4-checklist.md`](docs/validation/dualshock4-checklist.md) for the detailed USB record and future validation fields.
+
+## Joy-Con validation
+
+Physical validation currently records three browser-visible profiles: Joy-Con Left, Joy-Con Right, and the combined Joy-Con L+R device exposed by the current browser/OS combination. Only observed labels are overridden; combined-controller extra indices remain neutral until physically mapped. See [`docs/validation/joycon-validation.md`](docs/validation/joycon-validation.md).
 
 ## Project structure
 
