@@ -3,7 +3,7 @@ import { resolveControllerMode } from '../../src/controller/mapping/resolver';
 import { standardAxisRole, STANDARD_BUTTON_LABELS } from '../../src/controller/mapping/standard';
 import { rawAxisLabel, rawButtonLabel } from '../../src/controller/mapping/raw';
 import { dualShock4ButtonLabel } from '../../src/controller/profiles/dualshock4';
-import { joyConButtonLabel } from '../../src/controller/profiles/joycon';
+import { joyConButtonLabel, joyConStickRoles } from '../../src/controller/profiles/joycon';
 import { createNonStandardGamepad } from '../fixtures/nonStandard';
 import { createStandardGamepad } from '../fixtures/standardGamepad';
 
@@ -93,6 +93,27 @@ describe('mapping resolver', () => {
   it('does not invent labels for the combined Joy-Con profile', () => {
     expect(joyConButtonLabel('joycon-pair', 17)).toBeUndefined();
     expect(joyConButtonLabel('joycon-pair', 21)).toBeUndefined();
+  });
+
+  it('maps Joy-Con Left axes 0 and 1 to the left stick only', () => {
+    expect(joyConStickRoles('joycon-left')).toEqual({
+      left: [0, 1],
+      right: null,
+    });
+  });
+
+  it('maps Joy-Con Right axes 0 and 1 to the right stick only', () => {
+    expect(joyConStickRoles('joycon-right')).toEqual({
+      left: null,
+      right: [0, 1],
+    });
+  });
+
+  it('keeps combined Joy-Con axes in the two-stick standard layout', () => {
+    expect(joyConStickRoles('joycon-pair')).toEqual({
+      left: [0, 1],
+      right: [2, 3],
+    });
   });
 
   it('provides neutral standard and raw labels', () => {

@@ -67,6 +67,14 @@ async function installGamepadHarness(page: Page): Promise<void> {
   });
 }
 
+async function expectStickDiagnosticsDisabled(page: Page, stick: 'left' | 'right'): Promise<void> {
+  const actions = page.locator(`[data-session-action][data-stick="${stick}"]`);
+  await expect(actions).toHaveCount(6);
+  for (let index = 0; index < 6; index += 1) {
+    await expect(actions.nth(index)).toBeDisabled();
+  }
+}
+
 test.beforeEach(async ({ page }) => {
   await installGamepadHarness(page);
   await page.goto('/');
@@ -123,6 +131,42 @@ test('verified Joy-Con Right profile uses observed button labels', async ({ page
   await expect(page.locator('[data-button-index="9"]')).toContainText('Plus (+)');
   await expect(page.locator('[data-button-index="10"]')).toContainText('Right Stick Click');
   await expect(page.locator('[data-button-index="16"]')).toContainText('Home');
+});
+
+test('Joy-Con Left maps axes 0 and 1 to only the interpreted left stick', async ({ page }) => {
+  const left = standardPad(0, 'Wireless Gamepad (STANDARD GAMEPAD Vendor: 057e Product: 2006)');
+  left.axes = [0.42, -0.31];
+  await page.evaluate((pad) => window.__gamepadTest.connect(pad), left);
+
+  await expect(page.getByTestId('left-stick')).toHaveAttribute('data-x', '0.420');
+  await expect(page.getByTestId('left-stick')).toHaveAttribute('data-y', '-0.310');
+  await expect(page.getByTestId('right-stick')).toHaveAttribute('data-x', '');
+  await expect(page.locator('#center-right')).toContainText('Not available for this controller profile');
+  await expectStickDiagnosticsDisabled(page, 'right');
+});
+
+test('Joy-Con Right maps axes 0 and 1 to only the interpreted right stick', async ({ page }) => {
+  const right = standardPad(0, 'Wireless Gamepad (STANDARD GAMEPAD Vendor: 057e Product: 2007)');
+  right.axes = [-0.27, 0.63];
+  await page.evaluate((pad) => window.__gamepadTest.connect(pad), right);
+
+  await expect(page.getByTestId('left-stick')).toHaveAttribute('data-x', '');
+  await expect(page.getByTestId('right-stick')).toHaveAttribute('data-x', '-0.270');
+  await expect(page.getByTestId('right-stick')).toHaveAttribute('data-y', '0.630');
+  await expect(page.locator('#center-left')).toContainText('Not available for this controller profile');
+  await expectStickDiagnosticsDisabled(page, 'left');
+});
+
+test('combined Joy-Con keeps left and right stick axes separated', async ({ page }) => {
+  const pair = standardPad(0, 'Joy-Con L+R (STANDARD GAMEPAD Vendor: 057e Product: 200e)');
+  pair.buttons = Array.from({ length: 22 }, () => ({ pressed: false, touched: false, value: 0 }));
+  pair.axes = [0.2, -0.3, -0.4, 0.5];
+  await page.evaluate((pad) => window.__gamepadTest.connect(pad), pair);
+
+  await expect(page.getByTestId('left-stick')).toHaveAttribute('data-x', '0.200');
+  await expect(page.getByTestId('left-stick')).toHaveAttribute('data-y', '-0.300');
+  await expect(page.getByTestId('right-stick')).toHaveAttribute('data-x', '-0.400');
+  await expect(page.getByTestId('right-stick')).toHaveAttribute('data-y', '0.500');
 });
 
 test('combined Joy-Con is identified without inventing extra button labels', async ({ page }) => {
