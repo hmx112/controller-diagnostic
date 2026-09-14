@@ -38,7 +38,7 @@ export class CircularitySession {
     const sectorIndex = Math.round(normalizedAngle / sectorWidth) % this.sectorCount;
     const previous = this.outerRadii[sectorIndex];
 
-    if (previous === null || radius > previous) {
+    if (previous == null || radius > previous) {
       this.outerRadii[sectorIndex] = radius;
     }
     this.sampleCount += 1;
