@@ -285,9 +285,13 @@ function renderDiagnosticOutputs(
     : `${formatPercent(range.maxRadialPercent)} max observed`;
 
   const circularity = sessions[stick].circularity.result();
-  circularityOutput.textContent = circularity.sampleCount === 0
-    ? (sessions[stick].circularityActive ? 'Move around the perimeter…' : 'Not started')
-    : `${formatPercent(circularity.scorePercent)} score · ${formatPercent((circularity.radialSpread ?? 0) * 100)} spread`;
+  if (circularity.sampleCount === 0) {
+    circularityOutput.textContent = sessions[stick].circularityActive ? 'Move around the perimeter…' : 'Not started';
+  } else if (!circularity.ready) {
+    circularityOutput.textContent = `Keep moving around the perimeter… ${circularity.coveredSectorCount}/${circularity.totalSectorCount} sectors · ${formatPercent(circularity.coveragePercent)} coverage`;
+  } else {
+    circularityOutput.textContent = `${formatPercent(circularity.scorePercent)} score · ${formatPercent((circularity.radialSpread ?? 0) * 100)} spread`;
+  }
 
   const deadzone = sessions[stick].deadzone.result();
   if (!deadzone.active) {
