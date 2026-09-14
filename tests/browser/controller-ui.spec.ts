@@ -75,6 +75,16 @@ async function expectStickDiagnosticsDisabled(page: Page, stick: 'left' | 'right
   }
 }
 
+async function sampleLeftStickSector(page: Page, sector: number, radius = 1): Promise<void> {
+  const angle = (sector * 15 * Math.PI) / 180;
+  const x = radius * Math.cos(angle);
+  const y = radius * Math.sin(angle);
+  await page.evaluate(({ x, y, sector }) => {
+    window.__gamepadTest.update(0, { axes: [x, y, 0, 0], timestamp: sector + 2 });
+  }, { x, y, sector });
+  await page.waitForTimeout(25);
+}
+
 test.beforeEach(async ({ page }) => {
   await installGamepadHarness(page);
   await page.goto('/');
@@ -96,6 +106,23 @@ test('standard controller connects and live values update', async ({ page }) => 
   await expect(page.getByTestId('left-stick')).toHaveAttribute('data-y', '-0.250');
   await expect(page.locator('[data-button-index="0"]')).toHaveClass(/is-pressed/);
   await expect(page.getByTestId('trigger-l2').locator('output')).toHaveText('0.650');
+});
+
+test('circularity waits for enough directional coverage before showing a score', async ({ page }) => {
+  await page.evaluate((pad) => window.__gamepadTest.connect(pad), standardPad());
+  await page.locator('[data-session-action="start-circularity"][data-stick="left"]').click();
+
+  for (let sector = 0; sector < 17; sector += 1) {
+    await sampleLeftStickSector(page, sector);
+  }
+
+  await expect(page.locator('#circularity-left')).toContainText('Keep moving around the perimeter');
+  await expect(page.locator('#circularity-left')).toContainText('17/24 sectors');
+  await expect(page.locator('#circularity-left')).not.toContainText('score');
+
+  await sampleLeftStickSector(page, 17);
+  await expect(page.locator('#circularity-left')).toContainText('100.0% score');
+  await expect(page.locator('#circularity-left')).toContainText('0.0% spread');
 });
 
 test('verified DualShock 4 USB profile labels button 17 as touchpad click', async ({ page }) => {
