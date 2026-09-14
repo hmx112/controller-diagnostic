@@ -67,6 +67,14 @@ async function installGamepadHarness(page: Page): Promise<void> {
   });
 }
 
+async function expectStickDiagnosticsDisabled(page: Page, stick: 'left' | 'right'): Promise<void> {
+  const actions = page.locator(`[data-session-action][data-stick="${stick}"]`);
+  await expect(actions).toHaveCount(6);
+  for (let index = 0; index < 6; index += 1) {
+    await expect(actions.nth(index)).toBeDisabled();
+  }
+}
+
 test.beforeEach(async ({ page }) => {
   await installGamepadHarness(page);
   await page.goto('/');
@@ -134,7 +142,7 @@ test('Joy-Con Left maps axes 0 and 1 to only the interpreted left stick', async 
   await expect(page.getByTestId('left-stick')).toHaveAttribute('data-y', '-0.310');
   await expect(page.getByTestId('right-stick')).toHaveAttribute('data-x', '');
   await expect(page.locator('#center-right')).toContainText('Not available for this controller profile');
-  await expect(page.locator('[data-session-action][data-stick="right"]')).toBeDisabled();
+  await expectStickDiagnosticsDisabled(page, 'right');
 });
 
 test('Joy-Con Right maps axes 0 and 1 to only the interpreted right stick', async ({ page }) => {
@@ -146,7 +154,7 @@ test('Joy-Con Right maps axes 0 and 1 to only the interpreted right stick', asyn
   await expect(page.getByTestId('right-stick')).toHaveAttribute('data-x', '-0.270');
   await expect(page.getByTestId('right-stick')).toHaveAttribute('data-y', '0.630');
   await expect(page.locator('#center-left')).toContainText('Not available for this controller profile');
-  await expect(page.locator('[data-session-action][data-stick="left"]')).toBeDisabled();
+  await expectStickDiagnosticsDisabled(page, 'left');
 });
 
 test('combined Joy-Con keeps left and right stick axes separated', async ({ page }) => {
