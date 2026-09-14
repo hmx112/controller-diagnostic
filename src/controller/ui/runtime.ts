@@ -8,6 +8,7 @@ import { StickRangeSession } from '../diagnostics/stickRange.js';
 import { rawAxisLabel, rawButtonLabel } from '../mapping/raw.js';
 import { STANDARD_BUTTON_LABELS } from '../mapping/standard.js';
 import { dualShock4ButtonLabel } from '../profiles/dualshock4.js';
+import { joyConButtonLabel, type JoyConProfileId } from '../profiles/joycon.js';
 
 type StickName = 'left' | 'right';
 
@@ -119,6 +120,22 @@ function renderSelector(state: ControllerEngineState): void {
   if (state.selectedIndex !== null) elements.controllerSelect.value = String(state.selectedIndex);
 }
 
+function profileButtonLabel(controller: ControllerSnapshot, index: number): string | undefined {
+  if (controller.capabilities.profileId === 'dualshock4') {
+    return dualShock4ButtonLabel(index);
+  }
+
+  if (
+    controller.capabilities.profileId === 'joycon-left'
+    || controller.capabilities.profileId === 'joycon-right'
+    || controller.capabilities.profileId === 'joycon-pair'
+  ) {
+    return joyConButtonLabel(controller.capabilities.profileId as JoyConProfileId, index);
+  }
+
+  return undefined;
+}
+
 function renderButtonGrid(controller: ControllerSnapshot): void {
   const standard = controller.capabilities.standardMapping;
   const fragment = document.createDocumentFragment();
@@ -127,11 +144,8 @@ function renderButtonGrid(controller: ControllerSnapshot): void {
     const cell = document.createElement('div');
     cell.className = `button-cell${button.pressed ? ' is-pressed' : ''}`;
     cell.dataset.buttonIndex = String(button.index);
-    const profileLabel = controller.capabilities.profileId === 'dualshock4'
-      ? dualShock4ButtonLabel(button.index)
-      : undefined;
     const label = standard
-      ? (profileLabel ?? STANDARD_BUTTON_LABELS[button.index] ?? `Button ${button.index}`)
+      ? (profileButtonLabel(controller, button.index) ?? STANDARD_BUTTON_LABELS[button.index] ?? `Button ${button.index}`)
       : rawButtonLabel(button.index);
     cell.innerHTML = `<span>${label}</span><strong>${button.value.toFixed(3)}</strong>`;
     fragment.append(cell);
