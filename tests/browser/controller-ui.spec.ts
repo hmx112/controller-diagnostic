@@ -99,6 +99,46 @@ test('verified DualShock 4 USB profile labels button 17 as touchpad click', asyn
   await expect(page.locator('[data-button-index="17"]')).toContainText('Touchpad Click');
 });
 
+test('verified Joy-Con Left profile uses observed button labels', async ({ page }) => {
+  const left = standardPad(0, 'Wireless Gamepad (STANDARD GAMEPAD Vendor: 057e Product: 2006)');
+  left.axes = [0, 0];
+  await page.evaluate((pad) => window.__gamepadTest.connect(pad), left);
+
+  await expect(page.locator('#profile-id')).toContainText('joycon-left');
+  await expect(page.locator('[data-button-index="6"]')).toContainText('ZL');
+  await expect(page.locator('[data-button-index="8"]')).toContainText('L');
+  await expect(page.locator('[data-button-index="9"]')).toContainText('Minus (-)');
+  await expect(page.locator('[data-button-index="10"]')).toContainText('Left Stick Click');
+  await expect(page.locator('[data-button-index="16"]')).toContainText('Capture');
+});
+
+test('verified Joy-Con Right profile uses observed button labels', async ({ page }) => {
+  const right = standardPad(0, 'Wireless Gamepad (STANDARD GAMEPAD Vendor: 057e Product: 2007)');
+  right.axes = [0, 0];
+  await page.evaluate((pad) => window.__gamepadTest.connect(pad), right);
+
+  await expect(page.locator('#profile-id')).toContainText('joycon-right');
+  await expect(page.locator('[data-button-index="7"]')).toContainText('ZR');
+  await expect(page.locator('[data-button-index="8"]')).toContainText('R');
+  await expect(page.locator('[data-button-index="9"]')).toContainText('Plus (+)');
+  await expect(page.locator('[data-button-index="10"]')).toContainText('Right Stick Click');
+  await expect(page.locator('[data-button-index="16"]')).toContainText('Home');
+});
+
+test('combined Joy-Con is identified without inventing extra button labels', async ({ page }) => {
+  const pair = standardPad(0, 'Joy-Con L+R (STANDARD GAMEPAD Vendor: 057e Product: 200e)');
+  pair.buttons = Array.from({ length: 22 }, () => ({ pressed: false, touched: false, value: 0 }));
+  pair.axes = [0, 0, 0, 0];
+  await page.evaluate((pad) => window.__gamepadTest.connect(pad), pair);
+
+  await expect(page.locator('#profile-id')).toContainText('joycon-pair');
+  await expect(page.locator('[data-button-index="17"]')).toContainText('Button 17');
+});
+
+test('raw input explains that indices remain uninterpreted', async ({ page }) => {
+  await expect(page.locator('#raw-input-explanation')).toContainText('original button and axis indices');
+});
+
 test('non-standard mapping stays in Raw Input Mode without guessed stick roles', async ({ page }) => {
   const raw = standardPad(1, 'Synthetic Unknown Controller');
   raw.mapping = '';
