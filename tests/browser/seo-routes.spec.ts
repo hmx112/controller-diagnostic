@@ -4,7 +4,7 @@ test('home renders one shared controller tester and an absolute self-canonical',
   await page.goto('/');
 
   await expect(page).toHaveTitle('Controller Diagnostic — Gamepad Input Tester');
-  await expect(page.locator('h1')).toHaveCount(1);
+  await expect(page.locator('main h1')).toHaveCount(1);
   await expect(page.locator('#controller-picker')).toHaveCount(1);
   await expect(page.locator('#live-tool')).toHaveCount(1);
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
