@@ -37,3 +37,18 @@ test('stick drift page has unique SEO metadata, cautious copy, and one shared te
   await expect(page.getByRole('link', { name: 'Controller deadzone test' })).toHaveAttribute('href', '/controller-deadzone-test');
   await expect(page.locator('body')).not.toContainText('Your controller has stick drift');
 });
+
+test('controller deadzone page explains the 2% reference threshold without claiming hardware deadzone', async ({ page }) => {
+  await page.goto('/controller-deadzone-test');
+
+  await expect(page).toHaveTitle('Controller Deadzone Test — Check When Stick Input Starts Responding');
+  await expect(page.locator('main h1')).toHaveText('Controller deadzone test: see when your browser first receives stick movement.');
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+    'href',
+    'https://controller-diagnostic.pages.dev/controller-deadzone-test',
+  );
+  await expect(page.locator('#live-tool')).toHaveCount(1);
+  await expect(page.getByText('This is not a direct measurement of the controller’s built-in hardware or firmware deadzone.')).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Stick drift test' })).toHaveAttribute('href', '/stick-drift-test');
+  await expect(page.locator('body')).not.toContainText('Your deadzone is');
+});
