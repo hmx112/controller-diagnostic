@@ -116,7 +116,11 @@
         <div class="diagnostic-action"><output id="circularity-right">Not started</output><div><button data-session-action="start-circularity" data-stick="right">Start</button><button data-session-action="reset-circularity" data-stick="right">Reset</button></div></div>
       </div>
       <div class="diagnostic-row">
-        <div><strong>Deadzone threshold</strong><span>First movement above a 2% noise floor</span></div>
+        <div>
+          <strong>Input Threshold Test</strong>
+          <span>First observed movement above a 2% reference threshold</span>
+          <span>This does not directly measure a controller’s built-in hardware or firmware deadzone.</span>
+        </div>
         <div class="diagnostic-action"><output id="deadzone-left">Not started</output><div><button data-session-action="start-deadzone" data-stick="left">Start</button><button data-session-action="reset-deadzone" data-stick="left">Reset</button></div></div>
         <div class="diagnostic-action"><output id="deadzone-right">Not started</output><div><button data-session-action="start-deadzone" data-stick="right">Start</button><button data-session-action="reset-deadzone" data-stick="right">Reset</button></div></div>
       </div>
