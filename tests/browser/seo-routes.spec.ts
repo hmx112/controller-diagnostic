@@ -1,5 +1,30 @@
 import { expect, test } from '@playwright/test';
 
+type TestButton = { pressed: boolean; touched: boolean; value: number };
+type TestPad = {
+  id: string;
+  index: number;
+  connected: boolean;
+  mapping: string;
+  timestamp: number;
+  buttons: TestButton[];
+  axes: number[];
+};
+
+async function installSinglePadHarness(page: import('@playwright/test').Page): Promise<void> {
+  await page.addInitScript(() => {
+    let pad: TestPad | null = null;
+    Object.defineProperty(Navigator.prototype, 'getGamepads', {
+      configurable: true,
+      value: () => pad ? [{ ...pad, buttons: pad.buttons.map((button) => ({ ...button })), axes: [...pad.axes] }] : [],
+    });
+    (window as Window & { __connectSeoPad?: (value: TestPad) => void }).__connectSeoPad = (value) => {
+      pad = value;
+      window.dispatchEvent(new Event('gamepadconnected'));
+    };
+  });
+}
+
 test('home renders one shared controller tester and an absolute self-canonical', async ({ page }) => {
   await page.goto('/');
 
@@ -52,3 +77,28 @@ test('controller deadzone page explains the 2% reference threshold without claim
   await expect(page.getByRole('link', { name: 'Stick drift test' })).toHaveAttribute('href', '/stick-drift-test');
   await expect(page.locator('body')).not.toContainText('Your deadzone is');
 });
+
+for (const route of ['/', '/stick-drift-test', '/controller-deadzone-test']) {
+  test(`shared controller runtime works on ${route}`, async ({ page }) => {
+    await installSinglePadHarness(page);
+    await page.goto(route);
+
+    await page.evaluate(() => {
+      const connect = (window as Window & { __connectSeoPad?: (value: TestPad) => void }).__connectSeoPad;
+      connect?.({
+        id: 'Synthetic Standard Controller',
+        index: 0,
+        connected: true,
+        mapping: 'standard',
+        timestamp: 1,
+        buttons: Array.from({ length: 17 }, () => ({ pressed: false, touched: false, value: 0 })),
+        axes: [0.25, -0.5, 0, 0],
+      });
+    });
+
+    await expect(page.getByTestId('connection-status')).toContainText('Controller detected');
+    await expect(page.getByTestId('mode-badge')).toContainText('Standard Mapping');
+    await expect(page.getByTestId('left-stick')).toHaveAttribute('data-x', '0.250');
+    await expect(page.getByTestId('left-stick')).toHaveAttribute('data-y', '-0.500');
+  });
+}
