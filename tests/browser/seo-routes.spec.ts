@@ -12,3 +12,13 @@ test('home renders one shared controller tester and an absolute self-canonical',
     'https://controller-diagnostic.pages.dev/',
   );
 });
+
+test('shared tester describes the deadzone workflow as an input threshold test', async ({ page }) => {
+  await page.goto('/');
+
+  const diagnostics = page.getByTestId('diagnostics-panel');
+  await expect(diagnostics).toContainText('Input Threshold Test');
+  await expect(diagnostics).toContainText('First observed movement above a 2% reference threshold');
+  await expect(diagnostics).toContainText('This does not directly measure a controller’s built-in hardware or firmware deadzone.');
+  await expect(diagnostics).not.toContainText('Deadzone threshold');
+});
