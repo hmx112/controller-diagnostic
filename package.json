@@ -22,6 +22,10 @@
     "typescript": "6.0.2",
     "vitest": "5.0.0"
   },
+  "overrides": {
+    "@astrojs/compiler-rs": "0.4.0",
+    "@astrojs/compiler-binding": "0.4.0"
+  },
   "engines": {
     "node": ">=22.12.0"
   }
