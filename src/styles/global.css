@@ -65,6 +65,14 @@ h1 { max-width: 850px; margin: 0; font-size: clamp(40px, 6vw, 72px); line-height
 .site-footer { padding: 24px 0 40px; color: #60727d; font-size: 12px; border-top: 1px solid rgba(255,255,255,.05); }
 [hidden] { display: none !important; }
 
+.tool-links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+.tool-links a { color: var(--accent); text-decoration: none; border: 1px solid var(--border); border-radius: 999px; padding: 9px 12px; font-size: 13px; }
+.tool-links a:hover { border-color: var(--accent-strong); }
+.seo-copy { margin-top: 24px; }
+.seo-copy h2 { margin: 24px 0 8px; font-size: 20px; letter-spacing: -.02em; }
+.seo-copy h2:first-child { margin-top: 0; }
+.seo-copy p { margin: 0; color: var(--muted); line-height: 1.7; font-size: 14px; }
+
 @media (max-width: 900px) {
   .hero { grid-template-columns: 1fr; }.hero-badge { display: none; }
   .tool-grid, .detail-grid, .summary-grid { grid-template-columns: 1fr; }

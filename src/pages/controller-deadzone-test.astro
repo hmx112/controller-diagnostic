@@ -1,0 +1,37 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ControllerTester from '../components/ControllerTester.astro';
+
+const title = 'Controller Deadzone Test — Check When Stick Input Starts Responding';
+const description = 'Use a browser-based controller deadzone workflow to see when stick movement first exceeds a 2% reference threshold, without claiming a direct hardware deadzone measurement.';
+---
+<BaseLayout title={title} description={description} canonicalPath="/controller-deadzone-test">
+  <section class="hero" aria-labelledby="page-title">
+    <div>
+      <p class="eyebrow">Browser-observed response threshold</p>
+      <h1 id="page-title">Controller deadzone test: see when your browser first receives stick movement.</h1>
+      <p class="hero-copy">Start the Input Threshold Test, then move the stick very slowly away from center. The tool records the first browser-observed movement above a 2% reference threshold.</p>
+    </div>
+  </section>
+
+  <section class="notice">
+    <strong>What this result means</strong>
+    <p>This is not a direct measurement of the controller’s built-in hardware or firmware deadzone. It reports when browser-observed stick magnitude first exceeds the tool’s 2% reference threshold during this session.</p>
+  </section>
+
+  <ControllerTester />
+
+  <section class="panel seo-copy">
+    <h2>What does the 2% threshold mean?</h2>
+    <p>It is a fixed reference used by this site to make repeated browser-observed tests easier to compare. It is not a manufacturer specification.</p>
+    <h2>How should I run the test?</h2>
+    <p>Release the stick at center, press Start, then move the stick slowly in one direction. Reset and repeat if you moved too quickly.</p>
+    <h2>Why can a game feel different?</h2>
+    <p>A game may apply its own deadzone, response curve, or input processing after the browser or operating system layer. The result on this page therefore does not predict an exact in-game deadzone.</p>
+  </section>
+
+  <nav class="tool-links" aria-label="Related controller tests">
+    <a href="/">Full controller tester</a>
+    <a href="/stick-drift-test">Stick drift test</a>
+  </nav>
+</BaseLayout>

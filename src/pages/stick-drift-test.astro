@@ -1,0 +1,40 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ControllerTester from '../components/ControllerTester.astro';
+
+const title = 'Stick Drift Test — Check Controller Center Deviation in Your Browser';
+const description = 'Run a browser-based stick drift test to inspect live controller center deviation, stick position, observed range, and circularity without a hardware-failure verdict.';
+---
+<BaseLayout title={title} description={description} canonicalPath="/stick-drift-test">
+  <section class="hero" aria-labelledby="page-title">
+    <div>
+      <p class="eyebrow">Controller center check</p>
+      <h1 id="page-title">Stick drift test: see how far your controller rests from center.</h1>
+      <p class="hero-copy">Connect a controller, release the stick, and inspect the center value your browser receives. A non-zero reading is not, by itself, proof of hardware failure.</p>
+    </div>
+  </section>
+
+  <section class="explain-grid" aria-label="How to use the stick drift test">
+    <article><h2>1. Release the stick</h2><p>Place the controller on a stable surface and let the stick return to its resting position before reading center deviation.</p></article>
+    <article><h2>2. Watch center deviation</h2><p>The value is the current radial magnitude exposed by your browser and operating system.</p></article>
+    <article><h2>3. Repeat the check</h2><p>Move the stick normally, release it again, and compare repeated browser-observed resting values rather than relying on one sample.</p></article>
+  </section>
+
+  <ControllerTester />
+
+  <section class="panel seo-copy">
+    <h2>What does a non-zero center value mean?</h2>
+    <p>Small values can appear because of controller mechanics, operating-system processing, browser mapping, or normal input variation. This page does not apply a universal percentage that proves stick drift.</p>
+
+    <h2>Can this test repair stick drift?</h2>
+    <p>No. The page only visualizes and summarizes the controller values exposed to the browser.</p>
+
+    <h2>Why can another game or tool show a different result?</h2>
+    <p>Games, drivers, operating systems, and browsers can apply different mappings or deadzone behavior. Browser-observed values may therefore differ from raw hardware measurements or in-game behavior.</p>
+  </section>
+
+  <nav class="tool-links" aria-label="Related controller tests">
+    <a href="/">Full controller tester</a>
+    <a href="/controller-deadzone-test">Controller deadzone test</a>
+  </nav>
+</BaseLayout>
